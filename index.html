@@ -297,6 +297,7 @@ const STATIONS = [
 /* ---------------- Karte ---------------- */
 const map = L.map('map',{zoomControl:false, attributionControl:true, scrollWheelZoom:true})
   .setView([50.9,14.2],6);
+map.attributionControl.setPrefix(false);   // "Leaflet"-Schriftzug entfernen (OSM/CARTO-Credit bleibt, lizenzpflichtig)
 L.control.zoom({position:'bottomleft'}).addTo(map);
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
