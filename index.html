@@ -131,9 +131,11 @@
   }
   .sheet.open{transform:translateY(0);}
   .sheet .grip{
-    width:38px;height:4px;border-radius:4px;background:var(--line);
-    margin:9px auto 4px;flex:none;
+    width:44px;height:5px;border-radius:5px;background:var(--line);
+    margin:6px auto 2px;flex:none;cursor:pointer;
+    padding:9px 22px;background-clip:content-box;box-sizing:content-box;
   }
+  .sheet .grip:active{background:var(--ink-faint);background-clip:content-box;}
   .sheet-head{display:flex;align-items:baseline;gap:10px;padding-top:4px;}
   .station-no{
     font-family:'Source Serif 4',serif;font-weight:700;font-size:13px;
@@ -379,10 +381,69 @@ function showOverview(){
 }
 overviewBtn.addEventListener('click',showOverview);
 
+/* ---------------- Mobile: Karte schließen (wegwischen / auf Karte tippen) ---------------- */
+const sheetBody = sheet.querySelector('.sheet-body');
+function isCentered(){ return window.matchMedia('(min-width:720px)').matches; }
+const CLOSED = ()=> isCentered() ? 'translate(-50%,100%)' : 'translateY(100%)';
+const DRAGT  = dy => isCentered() ? `translate(-50%,${dy}px)` : `translateY(${dy}px)`;
+
+function dismissSheet(){
+  if(cur<0) return;
+  const p=pinEl(cur); if(p){p.classList.remove('active');p.classList.add('done');}
+  cur=-1;
+  sheet.style.transition=''; sheet.style.transform='';
+  sheet.classList.remove('open');
+  overviewBtn.classList.add('hidden');
+}
+// Tippen auf die Karte schließt die Info-Karte
+map.on('click', ()=>{ if(sheet.classList.contains('open')) dismissSheet(); });
+
+// Nach unten wischen / ziehen schließt die Info-Karte
+let dY0=null, dragging=false, lastDy=0;
+function dragStart(e){
+  if(!sheet.classList.contains('open')) return;
+  const handle = e.target.closest('.grip') || e.target.closest('.sheet-head') || e.target===sheet;
+  if(!handle && sheetBody.scrollTop>0) return;
+  dY0 = e.touches ? e.touches[0].clientY : e.clientY;
+  dragging=true; lastDy=0;
+  sheet.style.transition='none';
+}
+function dragMove(e){
+  if(!dragging) return;
+  const y = e.touches ? e.touches[0].clientY : e.clientY;
+  let dy = y - dY0;
+  if(dy<0) dy *= 0.22;                 // Widerstand beim Hochziehen
+  lastDy = dy;
+  if(e.cancelable && dy>0) e.preventDefault();
+  sheet.style.transform = DRAGT(dy);
+}
+function dragEnd(){
+  if(!dragging) return;
+  dragging=false;
+  sheet.style.transition='';
+  if(lastDy>96){                       // weit genug -> schließen
+    sheet.style.transform = CLOSED();
+    if(cur>=0){ const p=pinEl(cur); if(p){p.classList.remove('active');p.classList.add('done');} }
+    cur=-1; overviewBtn.classList.add('hidden');
+    setTimeout(()=>{ sheet.classList.remove('open'); sheet.style.transform=''; }, 380);
+  } else {                             // zurückschnappen
+    sheet.style.transform='';
+  }
+}
+sheet.addEventListener('touchstart', dragStart, {passive:true});
+sheet.addEventListener('touchmove',  dragMove,  {passive:false});
+sheet.addEventListener('touchend',   dragEnd);
+sheet.addEventListener('mousedown',  dragStart);
+window.addEventListener('mousemove', dragMove);
+window.addEventListener('mouseup',   dragEnd);
+// Tippen auf den Griff schließt ebenfalls
+sheet.querySelector('.grip').addEventListener('click', ()=>{ if(sheet.classList.contains('open')) dismissSheet(); });
+
 document.addEventListener('keydown',e=>{
   if(intro.classList.contains('hidden')===false)return;
   if(e.key==='ArrowRight'&&cur<STATIONS.length-1)goTo(cur+1);
   if(e.key==='ArrowLeft'&&cur>0)goTo(cur-1);
+  if(e.key==='Escape'&&sheet.classList.contains('open'))dismissSheet();
 });
 </script>
 </body>
