@@ -4,7 +4,7 @@ Interaktive Karte für den Geschichtsunterricht: der Weg einer Familie aus
 Schlesien nach Bayern nach 1945. Ein konstruiertes, aber historisch belegtes
 Beispiel mit 6 Stationen. Per QR-Code auf dem Handy abrufbar.
 
-**Live:** https://jdeuerling.github.io/schlesien-migration/
+**Live:** https://schlesien-migration.github.io/schlesien-migration/
 
 ## Dateien
 - `index.html` — die komplette App (selbst-enthalten, nur Leaflet/CARTO + Google Fonts per CDN)
@@ -30,7 +30,7 @@ git add -A && git commit -m "update" && git push
 
 ## QR-Code neu erzeugen (falls URL sich ändert)
 ```bash
-npx qrcode -o qr-code.png -w 1200 -e H "https://jdeuerling.github.io/schlesien-migration/"
+npx qrcode -o qr-code.png -w 1200 -e H "https://schlesien-migration.github.io/schlesien-migration/"
 ```
 
 ## Quellen (historische Einordnung)
